@@ -37,3 +37,12 @@ TOTAL_KARMA.times.each_slice(SLICE_SIZE).each_with_index do |ids, index|
   puts "Inserted #{(index + 1)*SLICE_SIZE} of #{TOTAL_KARMA} karma points..."
   KarmaPoint.import(fields, data, :validate => false, :timestamps => false)
 end
+
+counter = 0
+
+User.all.each do |user|
+ line = user.karma_points.map(&:value).inject{ |sum, value| sum + value}
+ User.connection.execute "UPDATE users SET value_cache=#{line} WHERE users.id=#{user.id}"
+ counter +=1
+ puts "running #{counter}" if counter%1000 == 0
+end
